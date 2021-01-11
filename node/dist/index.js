@@ -23,6 +23,7 @@ exports.MixtoLite = void 0;
 var fs_1 = require("fs");
 var os_1 = require("os");
 var path = __importStar(require("path"));
+var http = __importStar(require("http"));
 var MixtoLite = /** @class */ (function () {
     function MixtoLite(host, apiKey) {
         this.host = host;
@@ -36,7 +37,7 @@ var MixtoLite = /** @class */ (function () {
         // if host and api key is still empty, read config file
         if (!this.host || !this.api_key) {
             var confPath = path.join(os_1.homedir(), '.mixto.json');
-            if (fs_1.existsSync(confPath)) {
+            if (!fs_1.existsSync(confPath)) {
                 throw new Error('Mixto config file not found');
             }
             var config = JSON.parse(fs_1.readFileSync(confPath, 'utf-8'));
@@ -44,6 +45,63 @@ var MixtoLite = /** @class */ (function () {
             this.api_key = config.api_key;
         }
     }
+    MixtoLite.prototype.MakeRequest = function (endpoint, options, data, query) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            var url = new URL(endpoint, _this.host);
+            if (query) {
+                Object.keys(query).map(function (k) { return url.searchParams.append(k, query[k]); });
+            }
+            options.headers = {
+                'x-api-key': _this.api_key,
+                'content-type': 'application/json',
+                'user-agent': 'mixto-lite-node',
+            };
+            if (data) {
+                options.headers['content-length'] = data.length;
+            }
+            console.log(options);
+            console.log(data);
+            var req = http.request(url.toString(), options, function (res) {
+                var body = [];
+                if (res.statusCode) {
+                    if (res.statusCode < 200 || res.statusCode >= 300) {
+                        return reject(new Error("Bad response: " + res.statusCode));
+                    }
+                }
+                res.on('data', function (c) { return body.push(c); });
+                res.on('end', function () {
+                    resolve(Buffer.concat(body).toString());
+                });
+                res.on('error', function () { return reject("Bad response: " + res.statusCode); });
+            });
+            if (data) {
+                req.write(data);
+            }
+            req.end();
+        });
+    };
+    MixtoLite.prototype.GetWorkspaces = function () {
+        return this.MakeRequest('/api/misc/workspaces', { method: 'GET' }, null, {
+            all: 'true',
+        }).then(function (d) {
+            return JSON.parse(d);
+        });
+    };
+    MixtoLite.prototype.AddCommit = function (data, entry_id, title) {
+        if (!entry_id && !process.env.MIXTO_ENTRY_ID) {
+            throw new Error('Entry ID not specified');
+        }
+        var body = JSON.stringify({
+            data: data,
+            type: 'tool',
+            title: title,
+            meta: {},
+        });
+        return this.MakeRequest("/api/entry/" + entry_id + "/commit", { method: 'POST' }, body).then(function (d) {
+            return JSON.parse(d);
+        });
+    };
     return MixtoLite;
 }());
 exports.MixtoLite = MixtoLite;
