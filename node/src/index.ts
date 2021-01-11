@@ -7,6 +7,12 @@ export class MixtoLite {
 	host: string | undefined;
 	api_key: string | undefined;
 
+	/**
+	 *Creates an instance of MixtoLite.
+	 * @param {string} [host] The host URL.
+	 * @param {string} [apiKey] A valid API key
+	 * @memberof MixtoLite
+	 */
 	constructor(host?: string, apiKey?: string) {
 		this.host = host;
 		this.api_key = apiKey;
@@ -28,6 +34,18 @@ export class MixtoLite {
 		}
 	}
 
+	/**
+	 *A generic request handler that allows making requests 
+	 to the Mixto API easy.
+	 *
+	 * @param {string} endpoint The URI. Example: /api/entry/...
+	 * @param {http.RequestOptions} options Request options. Needed 
+	 * when building a custom request to the API
+	 * @param {*} [data] Data object to send as JSON
+	 * @param {*} [query] Query params as an object
+	 * @returns Thenable string
+	 * @memberof MixtoLite
+	 */
 	MakeRequest(
 		endpoint: string,
 		options: http.RequestOptions,
@@ -69,7 +87,14 @@ export class MixtoLite {
 		});
 	}
 
-	GetWorkspaces() {
+	/**
+	 *Get an array of all workspaces, entries and commits. 
+	 Helpful when creating builders to select an entry.
+	 *
+	 * @returns {Promise<Workspace[]>} Thenable array of workspaces
+	 * @memberof MixtoLite
+	 */
+	GetWorkspaces(): Promise<Workspace[]> {
 		return this.MakeRequest('/api/misc/workspaces', { method: 'GET' }, null, {
 			all: 'true',
 		}).then((d) => {
@@ -77,7 +102,17 @@ export class MixtoLite {
 		});
 	}
 
-	AddCommit(data: any, entry_id?: string, title?: string) {
+	/**
+	 *Add a commit to an entry
+	 *
+	 * @param {*} data Data to commit
+	 * @param {string} [entry_id] A valid entry ID
+	 * @param {string} [title] Title for the entry. Optional. Defaults
+	 * to untitled
+	 * @returns {Promise<Commit>} Thenable Commit object
+	 * @memberof MixtoLite
+	 */
+	AddCommit(data: any, entry_id?: string, title?: string): Promise<Commit> {
 		if (!entry_id && !process.env.MIXTO_ENTRY_ID) {
 			throw new Error('Entry ID not specified');
 		}

@@ -25,6 +25,12 @@ var os_1 = require("os");
 var path = __importStar(require("path"));
 var http = __importStar(require("http"));
 var MixtoLite = /** @class */ (function () {
+    /**
+     *Creates an instance of MixtoLite.
+     * @param {string} [host] The host URL.
+     * @param {string} [apiKey] A valid API key
+     * @memberof MixtoLite
+     */
     function MixtoLite(host, apiKey) {
         this.host = host;
         this.api_key = apiKey;
@@ -45,6 +51,18 @@ var MixtoLite = /** @class */ (function () {
             this.api_key = config.api_key;
         }
     }
+    /**
+     *A generic request handler that allows making requests
+     to the Mixto API easy.
+     *
+     * @param {string} endpoint The URI. Example: /api/entry/...
+     * @param {http.RequestOptions} options Request options. Needed
+     * when building a custom request to the API
+     * @param {*} [data] Data object to send as JSON
+     * @param {*} [query] Query params as an object
+     * @returns Thenable string
+     * @memberof MixtoLite
+     */
     MixtoLite.prototype.MakeRequest = function (endpoint, options, data, query) {
         var _this = this;
         return new Promise(function (resolve, reject) {
@@ -81,6 +99,13 @@ var MixtoLite = /** @class */ (function () {
             req.end();
         });
     };
+    /**
+     *Get an array of all workspaces, entries and commits.
+     Helpful when creating builders to select an entry.
+     *
+     * @returns {Promise<Workspace[]>} Thenable array of workspaces
+     * @memberof MixtoLite
+     */
     MixtoLite.prototype.GetWorkspaces = function () {
         return this.MakeRequest('/api/misc/workspaces', { method: 'GET' }, null, {
             all: 'true',
@@ -88,6 +113,16 @@ var MixtoLite = /** @class */ (function () {
             return JSON.parse(d);
         });
     };
+    /**
+     *Add a commit to an entry
+     *
+     * @param {*} data Data to commit
+     * @param {string} [entry_id] A valid entry ID
+     * @param {string} [title] Title for the entry. Optional. Defaults
+     * to untitled
+     * @returns {Promise<Commit>} Thenable Commit object
+     * @memberof MixtoLite
+     */
     MixtoLite.prototype.AddCommit = function (data, entry_id, title) {
         if (!entry_id && !process.env.MIXTO_ENTRY_ID) {
             throw new Error('Entry ID not specified');
