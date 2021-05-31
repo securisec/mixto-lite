@@ -1,0 +1,8 @@
+# created by virtualenv automatically
+
+bin/
+include/
+lib/
+pyven.cfg
+test.py
+*.pyc
