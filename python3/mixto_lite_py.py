@@ -27,6 +27,7 @@ class MixtoLite:
         super().__init__()
         self.host = host
         self.api_key = api_key
+        self.workspace = None
         self.status = 0
         self.commit_type = "tool"
 
@@ -44,6 +45,7 @@ class MixtoLite:
                     j = json.loads(f.read())
                     self.host = j["host"]
                     self.api_key = j["api_key"]
+                    self.workspace = j["workspace"]
             except:
                 print("Cannot read mixto config file")
                 raise

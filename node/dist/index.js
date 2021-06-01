@@ -34,6 +34,7 @@ var MixtoLite = /** @class */ (function () {
     function MixtoLite(host, apiKey) {
         this.host = host;
         this.api_key = apiKey;
+        this.workspace = undefined;
         if (!this.host) {
             this.host = process.env.MIXTO_HOST;
         }
@@ -49,6 +50,7 @@ var MixtoLite = /** @class */ (function () {
             var config = JSON.parse(fs_1.readFileSync(confPath, 'utf-8'));
             this.host = config.host;
             this.api_key = config.api_key;
+            this.workspace = config.workspace;
         }
     }
     /**
