@@ -69,8 +69,6 @@ export class MixtoLite {
 			if (data) {
 				options.headers['content-length'] = data.length;
 			}
-			console.log(options);
-			console.log(data);
 			const req = http.request(url.toString(), options, (res) => {
 				var body: any[] = [];
 				if (res.statusCode) {

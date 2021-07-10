@@ -80,8 +80,6 @@ var MixtoLite = /** @class */ (function () {
             if (data) {
                 options.headers['content-length'] = data.length;
             }
-            console.log(options);
-            console.log(data);
             var req = http.request(url.toString(), options, function (res) {
                 var body = [];
                 if (res.statusCode) {

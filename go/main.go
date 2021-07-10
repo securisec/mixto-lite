@@ -148,7 +148,7 @@ type Workspace struct {
 	Title       string   `json:"title"`
 	Category    string   `json:"category"`
 	EntryID     string   `json:"entry_id"`
-	CommitCount string   `json:"commit_count"`
+	CommitCount int      `json:"commit_count"`
 	Priority    string   `json:"priority"`
 	TimeUpdated int64    `json:"time_updated"`
 	Commits     []Commit `json:"commits"`
