@@ -71,7 +71,7 @@ func (c Config) MakeRequest(method string, endpoint string, data interface{}, qu
 
 	if res.StatusCode > 300 {
 		bErr, _ := ioutil.ReadAll(res.Body)
-		return bErr, errors.New("Bad status code")
+		return bErr, errors.New("bad status code")
 	}
 	body, err = ioutil.ReadAll(res.Body)
 
@@ -149,6 +149,7 @@ type Workspace struct {
 	Category    string   `json:"category"`
 	EntryID     string   `json:"entry_id"`
 	CommitCount int      `json:"commit_count"`
+	FlagsCount  int      `json:"flags_count"`
 	Priority    string   `json:"priority"`
 	TimeUpdated int64    `json:"time_updated"`
 	Commits     []Commit `json:"commits"`

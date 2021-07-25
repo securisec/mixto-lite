@@ -95,6 +95,7 @@ export interface Workspace {
 	category: string;
 	entry_id: string;
 	commit_count: number;
+	flags_count: number;
 	priority: string;
 	time_updated: number;
 	commits: Commit[];
