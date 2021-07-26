@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from 'fs';
 import { homedir } from 'os';
 import * as path from 'path';
 import * as http from 'http';
+import * as https from 'https';
 
 export class MixtoLite {
 	host: string | undefined;
@@ -69,7 +70,8 @@ export class MixtoLite {
 			if (data) {
 				options.headers['content-length'] = data.length;
 			}
-			const req = http.request(url.toString(), options, (res) => {
+			const reqLib = url.protocol === 'https:' ? https : http;
+			const req = reqLib.request(url.toString(), options, (res) => {
 				var body: any[] = [];
 				if (res.statusCode) {
 					if (res.statusCode < 200 || res.statusCode >= 300) {
