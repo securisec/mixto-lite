@@ -1,13 +1,14 @@
-from urllib.request import Request, urlopen
-from urllib.parse import urlencode, urljoin
-from urllib.error import HTTPError
-from pathlib import Path
-from os import getenv
+# Mixto python2 lite lib for integrations without any dependencies
+
+from urllib2 import Request, urlopen, HTTPError
+from urllib import urlencode
+from urlparse import urljoin
+import os
 import json
 
-MIXTO_ENTRY_ID = getenv("MIXTO_ENTRY_ID")
-MIXTO_HOST = getenv("MIXTO_HOST")
-MIXTO_API_KEY = getenv("MIXTO_API_KEY")
+MIXTO_ENTRY_ID = os.getenv("MIXTO_ENTRY_ID")
+MIXTO_HOST = os.getenv("MIXTO_HOST")
+MIXTO_API_KEY = os.getenv("MIXTO_API_KEY")
 
 
 class MissingRequired(Exception):
@@ -23,11 +24,10 @@ class BadResponse(Exception):
 
 
 class MixtoLite:
-    def __init__(self, host: str = None, api_key: str = None) -> None:
-        super().__init__()
+    def __init__(self, host = None, api_key = None):
         self.host = host
         self.api_key = api_key
-        self.workspace = None
+        self.worksapce = None
         self.status = 0
         self.commit_type = "tool"
 
@@ -40,23 +40,21 @@ class MixtoLite:
         # if host or apikey is not available, read config file
         if self.host == None or self.api_key == None:
             try:
-                conf_path = str(Path().home() / ".mixto.json")
+                conf_path = str(os.path.expanduser('~/.mixto.json'))
                 with open(conf_path) as f:
                     j = json.loads(f.read())
                     self.host = j["host"]
                     self.api_key = j["api_key"]
-                    self.workspace = j["workspace"]
+                    self.worksapce = j["workspace"]
             except:
                 print("Cannot read mixto config file")
                 raise
 
     def MakeRequest(
         self,
-        method: str,
-        uri: str,
-        body: dict = {},
-        query: dict = {},
-        isJSON: bool = True,
+        uri,
+        data = {},
+        is_query = False,
     ):
         """Generic method helpful in extending this lib for other Mixto 
         API calls. Refer to Mixto docs for all available API endpoints. 
@@ -64,43 +62,47 @@ class MixtoLite:
         Args:
             method (str): Request method
             uri (str): Mixto URI. 
-            body (dict, optional): Body. Defaults to {}.
-            query (dict, optional): Query params. Defaults to {}.
-            isJSON (bool, optional): If the response is of type JSON. Defaults to True.
+            data (dict, optional): Body or query params. Defaults to {}.
+            is_query (bool, optional): True if query params. Defaults to False.
 
         Raises:
-            BadResponse: [description]
-            BadResponse: [description]
+            BadResponse: If status code is not 200, raises exception
 
         Returns:
-            [type]: [description]
+            None: None
         """
+        # add base url with endpoint
         url = urljoin(str(self.host), uri)
-        q = ""
-        if query:
-            q = "?" + urlencode(query)
+        # if query params, add data as query params
+        if is_query:
+            data = urlencode(data)
+            url += "?" + data
+        else:
+            # add as json body
+            data = json.dumps(data)
+        # create request object
         req = Request(
-            method=method.upper(),
-            url=url + q,
-            data=json.dumps(body).encode(),
-            headers={"x-api-key": self.api_key, "user-agent": "mixto-lite-py",},
+            url=url,
+            headers={"x-api-key": self.api_key, "user-agent": "mixto-lite-py2",},
         )
-        if body:
+        # add json content type if post body
+        if not is_query:
             req.add_header("Content-Type", "application/json")
+            req.add_data(data)
+
+        # send request
         try:
             res = urlopen(req)
             body = res.read().decode()
             self.status = res.getcode()
             if self.status > 300:
                 raise BadResponse(self.status, res)
-            if isJSON:
-                return json.loads(str(body))
             else:
                 return body
         except HTTPError as e:
             raise BadResponse(e.code, e.read())
 
-    def AddCommit(self, data: str, entry_id: str = None, title: str = ""):
+    def AddCommit(self, data, entry_id = None, title = ""):
         """Add/commit data to an entry. This is the primary functionality of 
         an integration
 
@@ -113,18 +115,16 @@ class MixtoLite:
             MissingRequired: If entry id is missing
 
         Returns:
-            dict: Commit added response
+            any: Commit added response
         """
         if MIXTO_ENTRY_ID is None and entry_id is None:
             raise MissingRequired("Entry id is missing")
 
         e_id = MIXTO_ENTRY_ID if MIXTO_ENTRY_ID else entry_id
-        r = self.MakeRequest(
-            "POST",
+        return self.MakeRequest(
             "/api/entry/{}/commit".format(e_id),
             {"data": data, "type": self.commit_type, "title": title},
         )
-        return r
 
     def GetWorkspaces(self):
         """Get all workspaces, entries and commits in a compact format. 
@@ -135,5 +135,5 @@ class MixtoLite:
             List[dict]: Array of workspace items
         """
         return self.MakeRequest(
-            "GET", "/api/misc/workspaces", None, {"all": "true"}, True
+            "/api/misc/workspaces", {"all": "true"}, True
         )
