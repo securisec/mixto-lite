@@ -24,6 +24,7 @@ var fs_1 = require("fs");
 var os_1 = require("os");
 var path = __importStar(require("path"));
 var http = __importStar(require("http"));
+var https = __importStar(require("https"));
 var MixtoLite = /** @class */ (function () {
     /**
      *Creates an instance of MixtoLite.
@@ -80,7 +81,8 @@ var MixtoLite = /** @class */ (function () {
             if (data) {
                 options.headers['content-length'] = data.length;
             }
-            var req = http.request(url.toString(), options, function (res) {
+            var reqLib = url.protocol === 'https:' ? https : http;
+            var req = reqLib.request(url.toString(), options, function (res) {
                 var body = [];
                 if (res.statusCode) {
                     if (res.statusCode < 200 || res.statusCode >= 300) {
