@@ -21,7 +21,7 @@ type Config struct {
 }
 
 // MakeRequest generic request builder for mixto api
-func (c Config) MakeRequest(method string, endpoint string, data interface{}, query map[string]string) ([]byte, error) {
+func (c *Config) MakeRequest(method string, endpoint string, data interface{}, query map[string]string) ([]byte, error) {
 	var (
 		err  error
 		req  *http.Request
@@ -80,7 +80,7 @@ func (c Config) MakeRequest(method string, endpoint string, data interface{}, qu
 }
 
 // GetWorkspaces get an array of all entries in a redacted form
-func (c Config) GetWorkspaces() ([]Workspace, error) {
+func (c *Config) GetWorkspaces() ([]Workspace, error) {
 	var r []Workspace
 	b, err := c.MakeRequest("GET", "/api/misc/workspaces", nil, nil)
 	if err != nil {
@@ -90,8 +90,24 @@ func (c Config) GetWorkspaces() ([]Workspace, error) {
 	return r, err
 }
 
+// GetEntryIDs get an array of all entries
+// filtered by current workspace
+func (c *Config) GetEntryIDs() ([]string, error) {
+	var ids []string
+	workspaces, err := c.GetWorkspaces()
+	if err != nil {
+		return ids, err
+	}
+	for _, w := range workspaces {
+		if w.Workspace == c.Workspace {
+			ids = append(ids, w.EntryID)
+		}
+	}
+	return ids, nil
+}
+
 // AddCommit add a commit to an entry
-func (c Config) AddCommit(entryID string, data interface{}, title string) (Commit, error) {
+func (c *Config) AddCommit(entryID string, data interface{}, title string) (Commit, error) {
 	var r Commit
 	e := fmt.Sprintf("/api/entry/%s/commit", entryID)
 	body := map[string]interface{}{

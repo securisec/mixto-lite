@@ -107,6 +107,22 @@ export class MixtoLite {
 	}
 
 	/**
+	 *Get all entry ids filtered by current workspace.
+	 *
+	 * @returns {Promise<string[]>}
+	 * @memberof MixtoLite
+	 */
+	async GetEntryIDs(): Promise<string[]> {
+		const workspaces = await this.GetWorkspaces();
+		return workspaces.reduce((acc: string[], w: Workspace) => {
+			if (this.workspace == w.workspace) {
+				return [...acc, w.entry_id];
+			}
+			return acc;
+		}, []);
+	}
+
+	/**
 	 *Add a commit to an entry
 	 *
 	 * @param {*} data Data to commit

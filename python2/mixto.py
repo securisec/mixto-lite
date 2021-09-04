@@ -137,3 +137,15 @@ class MixtoLite:
         return self.MakeRequest(
             "/api/misc/workspaces", {"all": "true"}, True
         )
+
+    def GetEntryIDs(self):
+        """Get all entry ids filtered by the current workspace
+        
+        Returns:
+            List[str]: List of entry ids
+        """
+        # get all workspaces
+        workspaces = self.GetWorkspaces()
+        # filter workspaces by current workspace
+        return [w["entry_id"] for w in workspaces if w["workspace"] == self.workspace]
+

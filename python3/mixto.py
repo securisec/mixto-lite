@@ -1,5 +1,6 @@
 # Mixto lite lib for python3
 
+from typing import List
 from urllib.request import Request, urlopen
 from urllib.parse import urlencode, urljoin
 from urllib.error import HTTPError
@@ -128,7 +129,7 @@ class MixtoLite:
         )
         return r
 
-    def GetWorkspaces(self):
+    def GetWorkspaces(self) -> List[dict]:
         """Get all workspaces, entries and commits in a compact format. 
         Helpful when trying to populate entry ID and commit ID's or 
         filter by workspace
@@ -139,3 +140,14 @@ class MixtoLite:
         return self.MakeRequest(
             "GET", "/api/misc/workspaces", None, {"all": "true"}, True
         )
+
+    def GetEntryIDs(self) -> List[str]:
+        """Get all entry ids filtered by the current workspace
+        
+        Returns:
+            List[str]: List of entry ids
+        """
+        # get all workspaces
+        workspaces = self.GetWorkspaces()
+        # filter workspaces by current workspace
+        return [w["entry_id"] for w in workspaces if w["workspace"] == self.workspace]
