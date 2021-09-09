@@ -4,7 +4,7 @@ Lightweight language bindings without external dependencies to build integration
 The idea is to offer a subset of the Mixto API to make integration development easy and without any external dependencies. 
 
 ## Supported languages
-- Python
+- Python 2 and 3
 - Typescript Node
 - Javascript browser
 - Go
@@ -20,5 +20,6 @@ All of the sdks needs three variables, the mixto host, mixto api key and entry i
 Where possible, the lite sdk offers a MixtoLite class (depends on the language) with the following three methods:
   - **MakeRequest** Generic request builder for mixto
   - **AddCommit** Used to add commits to a Mixto entry
+  - **GetEntryIDs** Get entry IDs for a specific workspace. If workspace is not specified, this method may return an entry array.
   - **GetWorkspaces** Used to get all workspaces, entries and commits
     - Provides workspace, entry_id, commit_id etc
