@@ -1,5 +1,7 @@
 # Mixto lite SDK for Java
 
+## Build
+Build jar file by opening the project in intellij idea and selecting build.
 
 ## Example
 ```java
