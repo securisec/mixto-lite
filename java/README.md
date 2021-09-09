@@ -3,7 +3,7 @@
 
 ## Example
 ```java
-import com.securisec.mixto.Mixto;
+import mixto.Mixto;
 
 public class Main {
     public static void main(String[] args) {
@@ -15,7 +15,10 @@ public class Main {
             // Get workspaces
             var workspaces = mixto.GetWorkspaces();
             // Add a commit to Mixto
-           var res = mixto.AddCommit("hello from java sdk", "empty-abcde123", "from java");
+           var res = mixto.AddCommit(
+             "hello from java sdk", 
+             "empty-abcde123", 
+             "from java");
         } catch (Exception err) {
             err.printStackTrace();
         }

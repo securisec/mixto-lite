@@ -1,9 +1,7 @@
-package com.securisec.mixto;
+package mixto;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.securisec.mixto.types.Config;
-import com.securisec.mixto.types.Workspace;
 import okhttp3.*;
 
 import java.io.IOException;
@@ -18,8 +16,8 @@ public final class Mixto {
     private final OkHttpClient client = new OkHttpClient();
 
     /**
-     * @param apiKey    com.securisec.mixto.Mixto API key
-     * @param host      com.securisec.mixto.Mixto host URL
+     * @param apiKey    Mixto API key
+     * @param host      Mixto host URL
      * @param workspace Current workspace
      * @throws IllegalArgumentException Throws error if API key or Host is not defined
      */
@@ -33,7 +31,7 @@ public final class Mixto {
     }
 
     /**
-     * Create a new com.securisec.mixto.Mixto instance from the local config file
+     * Create a new Mixto instance from the local config file
      *
      * @throws Exception raised if local config file cannot be read, or parsing fails
      */

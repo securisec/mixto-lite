@@ -1,4 +1,4 @@
-package com.securisec.mixto.types;
+package mixto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
