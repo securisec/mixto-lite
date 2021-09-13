@@ -36,13 +36,23 @@ public final class Mixto {
      * @throws Exception raised if local config file cannot be read, or parsing fails
      */
     public Mixto() throws Exception {
-        var configFile = System.getProperty("user.home") + "/.mixto.json";
-        var configMapper = new ObjectMapper();
-        configMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        var config = configMapper.readValue(Paths.get(configFile).toFile(), Config.class);
-        this.MIXTO_API_KEY = config.api_key;
-        this.MIXTO_HOST = config.host;
-        this.MIXTO_WORKSPACE = config.workspace;
+        /* Check envars for values first */
+        var envApiKey = System.getenv("MIXTO_API_KEY");
+        var envHost = System.getenv("MIXTO_HOST");
+        var envWorkspace = System.getenv("MIXTO_WORKSPACE");
+        if (envApiKey == null || envHost == null || envWorkspace == null) {
+            var configFile = System.getProperty("user.home") + "/.mixto.json";
+            var configMapper = new ObjectMapper();
+            configMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            var config = configMapper.readValue(Paths.get(configFile).toFile(), Config.class);
+            this.MIXTO_API_KEY = config.api_key;
+            this.MIXTO_HOST = config.host;
+            this.MIXTO_WORKSPACE = config.workspace;
+        } else {
+            this.MIXTO_API_KEY = envApiKey;
+            this.MIXTO_HOST = envHost;
+            this.MIXTO_WORKSPACE = envWorkspace;
+        }
     }
 
     private HttpUrl.Builder makeURL(String path) {
