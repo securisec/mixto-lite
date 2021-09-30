@@ -61,12 +61,12 @@ class MixtoLite:
         query: dict = {},
         isJSON: bool = True,
     ):
-        """Generic method helpful in extending this lib for other Mixto 
-        API calls. Refer to Mixto docs for all available API endpoints. 
+        """Generic method helpful in extending this lib for other Mixto
+        API calls. Refer to Mixto docs for all available API endpoints.
 
         Args:
             method (str): Request method
-            uri (str): Mixto URI. 
+            uri (str): Mixto URI.
             body (dict, optional): Body. Defaults to {}.
             query (dict, optional): Query params. Defaults to {}.
             isJSON (bool, optional): If the response is of type JSON. Defaults to True.
@@ -86,7 +86,10 @@ class MixtoLite:
             method=method.upper(),
             url=url + q,
             data=json.dumps(body).encode(),
-            headers={"x-api-key": self.api_key, "user-agent": "mixto-lite-py",},
+            headers={
+                "x-api-key": self.api_key,
+                "user-agent": "mixto-lite-py",
+            },
         )
         if body:
             req.add_header("Content-Type", "application/json")
@@ -104,7 +107,7 @@ class MixtoLite:
             raise BadResponse(e.code, e.read())
 
     def AddCommit(self, data: str, entry_id: str = None, title: str = ""):
-        """Add/commit data to an entry. This is the primary functionality of 
+        """Add/commit data to an entry. This is the primary functionality of
         an integration
 
         Args:
@@ -124,14 +127,14 @@ class MixtoLite:
         e_id = MIXTO_ENTRY_ID if MIXTO_ENTRY_ID else entry_id
         r = self.MakeRequest(
             "POST",
-            "/api/entry/{}/commit".format(e_id),
+            "/api/entry/{}/{}/commit".format(self.workspace, e_id),
             {"data": data, "type": self.commit_type, "title": title},
         )
         return r
 
     def GetWorkspaces(self) -> List[dict]:
-        """Get all workspaces, entries and commits in a compact format. 
-        Helpful when trying to populate entry ID and commit ID's or 
+        """Get all workspaces, entries and commits in a compact format.
+        Helpful when trying to populate entry ID and commit ID's or
         filter by workspace
 
         Returns:
@@ -143,7 +146,7 @@ class MixtoLite:
 
     def GetEntryIDs(self) -> List[str]:
         """Get all entry ids filtered by the current workspace
-        
+
         Returns:
             List[str]: List of entry ids
         """

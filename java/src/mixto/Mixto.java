@@ -31,7 +31,8 @@ public final class Mixto {
     }
 
     /**
-     * Create a new Mixto instance from the local config file
+     * Create a new Mixto instance from the local config file. If valid environment variables are set,
+     * this class is initialized with the environment variables instead.
      *
      * @throws Exception raised if local config file cannot be read, or parsing fails
      */
@@ -55,15 +56,26 @@ public final class Mixto {
         }
     }
 
+    /**
+     * Make a new URL with the provided path and host from config
+     * @param path to join
+     * @return HttpUrl.Builder object
+     */
     private HttpUrl.Builder makeURL(String path) {
         return HttpUrl.parse(this.MIXTO_HOST).newBuilder().addPathSegments(path);
     }
 
-    private Request.Builder makeRequestObject(String uri, HashMap<String, String> query) {
-        /* Replace forward slash from uri */
-        uri = uri.replaceFirst("^/", "");
+    /**
+     * Make a request object
+     * @param endpoint for api
+     * @param query params. Can be empty
+     * @return Request.Builder object
+     */
+    private Request.Builder makeRequestObject(String endpoint, HashMap<String, String> query) {
+        /* Replace forward slash from endpoint */
+        endpoint = endpoint.replaceFirst("^/", "");
         /* Build the request URL */
-        var url = this.makeURL(uri);
+        var url = this.makeURL(endpoint);
         /* Add query parameters */
         for (Map.Entry<String, String> q : query.entrySet()) {
             url.addQueryParameter(q.getKey(), q.getValue());
@@ -76,20 +88,41 @@ public final class Mixto {
 
     }
 
-    private boolean hasBadStatus(Response respose) {
-        return respose.code() != 200;
+    /**
+     * Check is status code is 200
+     * @param response object
+     * @return true if not 200
+     */
+    private boolean hasBadStatus(Response response) {
+        return response.code() != 200;
     }
 
-    public Response MakeRequest(String uri, HashMap<String, String> query) throws Exception {
-        var request = this.makeRequestObject(uri, query);
+    /**
+     * Make a GET request
+     * @param endpoint to the api endpoint
+     * @param query any query parameters
+     * @return Response object
+     * @throws Exception If status code is not 200
+     */
+    public Response MakeRequest(String endpoint, HashMap<String, String> query) throws Exception {
+        var request = this.makeRequestObject(endpoint, query);
         var response = client.newCall(request.build()).execute();
         if (response.code() != 200)
             throw new IOException("Bad status code: " + response.code());
         return response;
     }
 
-    public Response MakeRequest(String method, String uri, RequestBody body) throws Exception {
-        var request = this.makeRequestObject(uri, EMPTY_QUERY);
+    /**
+     * Make requests that are not GET requests. Use `jsonfromString` to easily build the optional json body
+     *
+     * @param method for request
+     * @param endpoint for api request
+     * @param body request json body
+     * @return Response object
+     * @throws Exception If status is not 200
+     */
+    public Response MakeRequest(String method, String endpoint, RequestBody body) throws Exception {
+        var request = this.makeRequestObject(endpoint, EMPTY_QUERY);
         var response = client.newCall(request.method(method, body).build()).execute();
         if (hasBadStatus(response))
             throw new IOException("Bad status code: " + response.code());
@@ -104,8 +137,8 @@ public final class Mixto {
      */
     public Workspace[] GetWorkspaces() throws Exception {
         var query = new HashMap<String, String>();
-        var responseMapper = new ObjectMapper();
         query.put("all", "true");
+        var responseMapper = new ObjectMapper();
         var response = this.MakeRequest("/api/misc/workspaces", query);
         Workspace[] workspaces = responseMapper.readValue(response.body().byteStream(), Workspace[].class);
         if (MIXTO_WORKSPACE == null) {
@@ -138,7 +171,7 @@ public final class Mixto {
      * @throws Exception if status code is not 200
      */
     public Response AddCommit(String data, String entryID, String title) throws Exception {
-        var entryURL = "/api/entry/" + entryID + "/commit";
+        var entryURL = "/api/entry/" + this.MIXTO_WORKSPACE + "/" + entryID + "/commit";
         var body = new HashMap<String, String>();
         body.put("type", "tool");
         body.put("title", title);
@@ -148,8 +181,13 @@ public final class Mixto {
         return MakeRequest("POST", entryURL, jsonfromString(jsonBody));
     }
 
-    public RequestBody jsonfromString(String json) {
+    /**
+     * Convert JSON string to RequestBody for non GET requests
+     * @param jsonString json as string
+     * @return RequestBody to be used in MakeRequest method
+     */
+    public RequestBody jsonfromString(String jsonString) {
         var jsonContentTypeHeader = MediaType.parse("application/json; charset=utf-8");
-        return RequestBody.create(jsonContentTypeHeader, json);
+        return RequestBody.create(jsonContentTypeHeader, jsonString);
     }
 }

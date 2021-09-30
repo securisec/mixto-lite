@@ -143,7 +143,7 @@ export class MixtoLite {
 			meta: {},
 		});
 		return this.MakeRequest(
-			`/api/entry/${entry_id}/commit`,
+			`/api/entry/${this.workspace}/${entry_id}/commit`,
 			{ method: 'POST' },
 			body
 		).then((d) => {

@@ -1,6 +1,7 @@
 export class MixtoLite {
 	host: string;
 	apiKey: string;
+	workspace: string;
 
 	/**
 	 *Creates an instance of MixtoLite.
@@ -8,9 +9,10 @@ export class MixtoLite {
 	 * @param {string} apiKey A valid Mixto API key
 	 * @memberof MixtoLite
 	 */
-	constructor(host: string, apiKey: string) {
+	constructor(workspace: string, host: string, apiKey: string) {
 		this.host = host;
 		this.apiKey = apiKey;
+		this.workspace = workspace;
 
 		if (!this.host || !this.apiKey) {
 			throw new Error('Host or API key not provided');
@@ -82,7 +84,7 @@ export class MixtoLite {
 			meta: {},
 		};
 		return this.MakeRequest(
-			`/api/entry/${entry_id}/commit`,
+			`/api/entry/${this.workspace}/${entry_id}/commit`,
 			{ method: 'POST' },
 			body
 		).then((d) => d.json());

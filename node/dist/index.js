@@ -201,7 +201,7 @@ var MixtoLite = /** @class */ (function () {
             title: title,
             meta: {},
         });
-        return this.MakeRequest("/api/entry/" + entry_id + "/commit", { method: 'POST' }, body).then(function (d) {
+        return this.MakeRequest("/api/entry/" + this.workspace + "/" + entry_id + "/commit", { method: 'POST' }, body).then(function (d) {
             return JSON.parse(d);
         });
     };

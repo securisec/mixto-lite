@@ -109,7 +109,7 @@ func (c *Config) GetEntryIDs() ([]string, error) {
 // AddCommit add a commit to an entry
 func (c *Config) AddCommit(entryID string, data interface{}, title string) (Commit, error) {
 	var r Commit
-	e := fmt.Sprintf("/api/entry/%s/commit", entryID)
+	e := fmt.Sprintf("/api/entry/%s/%s/commit", c.Workspace, entryID)
 	body := map[string]interface{}{
 		"data":  data,
 		"title": title,

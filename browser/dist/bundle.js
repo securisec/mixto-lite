@@ -9,9 +9,10 @@ var MixtoLite = /** @class */ (function () {
      * @param {string} apiKey A valid Mixto API key
      * @memberof MixtoLite
      */
-    function MixtoLite(host, apiKey) {
+    function MixtoLite(workspace, host, apiKey) {
         this.host = host;
         this.apiKey = apiKey;
+        this.workspace = workspace;
         if (!this.host || !this.apiKey) {
             throw new Error('Host or API key not provided');
         }
@@ -73,7 +74,7 @@ var MixtoLite = /** @class */ (function () {
             title: title,
             meta: {},
         };
-        return this.MakeRequest("/api/entry/" + entry_id + "/commit", { method: 'POST' }, body).then(function (d) { return d.json(); });
+        return this.MakeRequest("/api/entry/" + this.workspace + "/" + entry_id + "/commit", { method: 'POST' }, body).then(function (d) { return d.json(); });
     };
     return MixtoLite;
 }());
