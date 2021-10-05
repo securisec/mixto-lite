@@ -52,7 +52,7 @@ var MixtoLite = /** @class */ (function () {
      * @memberof MixtoLite
      */
     MixtoLite.prototype.GetWorkspaces = function () {
-        return this.MakeRequest('/api/misc/workspaces', {
+        return this.MakeRequest("/api/misc/workspaces/" + this.workspace, {
             method: 'GET',
         }).then(function (d) { return d.json(); });
     };

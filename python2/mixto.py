@@ -24,10 +24,10 @@ class BadResponse(Exception):
 
 
 class MixtoLite:
-    def __init__(self, host = None, api_key = None):
+    def __init__(self, host=None, api_key=None):
         self.host = host
         self.api_key = api_key
-        self.worksapce = None
+        self.workspace = None
         self.status = 0
         self.commit_type = "tool"
 
@@ -40,12 +40,12 @@ class MixtoLite:
         # if host or apikey is not available, read config file
         if self.host == None or self.api_key == None:
             try:
-                conf_path = str(os.path.expanduser('~/.mixto.json'))
+                conf_path = str(os.path.expanduser("~/.mixto.json"))
                 with open(conf_path) as f:
                     j = json.loads(f.read())
                     self.host = j["host"]
                     self.api_key = j["api_key"]
-                    self.worksapce = j["workspace"]
+                    self.workspace = j["workspace"]
             except:
                 print("Cannot read mixto config file")
                 raise
@@ -53,15 +53,15 @@ class MixtoLite:
     def MakeRequest(
         self,
         uri,
-        data = {},
-        is_query = False,
+        data={},
+        is_query=False,
     ):
-        """Generic method helpful in extending this lib for other Mixto 
-        API calls. Refer to Mixto docs for all available API endpoints. 
+        """Generic method helpful in extending this lib for other Mixto
+        API calls. Refer to Mixto docs for all available API endpoints.
 
         Args:
             method (str): Request method
-            uri (str): Mixto URI. 
+            uri (str): Mixto URI.
             data (dict, optional): Body or query params. Defaults to {}.
             is_query (bool, optional): True if query params. Defaults to False.
 
@@ -83,7 +83,10 @@ class MixtoLite:
         # create request object
         req = Request(
             url=url,
-            headers={"x-api-key": self.api_key, "user-agent": "mixto-lite-py2",},
+            headers={
+                "x-api-key": self.api_key,
+                "user-agent": "mixto-lite-py2",
+            },
         )
         # add json content type if post body
         if not is_query:
@@ -93,7 +96,7 @@ class MixtoLite:
         # send request
         try:
             res = urlopen(req)
-            body = res.read().decode()
+            body = res.read()
             self.status = res.getcode()
             if self.status > 300:
                 raise BadResponse(self.status, res)
@@ -102,8 +105,8 @@ class MixtoLite:
         except HTTPError as e:
             raise BadResponse(e.code, e.read())
 
-    def AddCommit(self, data, entry_id = None, title = ""):
-        """Add/commit data to an entry. This is the primary functionality of 
+    def AddCommit(self, data, entry_id=None, title=""):
+        """Add/commit data to an entry. This is the primary functionality of
         an integration
 
         Args:
@@ -122,30 +125,27 @@ class MixtoLite:
 
         e_id = MIXTO_ENTRY_ID if MIXTO_ENTRY_ID else entry_id
         return self.MakeRequest(
-            "/api/entry/{}/{}/commit".format(self.worksapce, e_id),
+            "/api/entry/{}/{}/commit".format(self.workspace, e_id),
             {"data": data, "type": self.commit_type, "title": title},
         )
 
     def GetWorkspaces(self):
-        """Get all workspaces, entries and commits in a compact format. 
-        Helpful when trying to populate entry ID and commit ID's or 
-        filter by workspace
+        """Get information and stats about the current workspace
 
         Returns:
             List[dict]: Array of workspace items
         """
-        return self.MakeRequest(
-            "/api/misc/workspaces", {"all": "true"}, True
-        )
+        return json.loads(self.MakeRequest("/api/workspace", {}, True))
 
     def GetEntryIDs(self):
         """Get all entry ids filtered by the current workspace
-        
-        Returns:
-            List[str]: List of entry ids
-        """
-        # get all workspaces
-        workspaces = self.GetWorkspaces()
-        # filter workspaces by current workspace
-        return [w["entry_id"] for w in workspaces if w["workspace"] == self.workspace]
 
+        Returns:
+            List[dict]: List of entry ids
+        """
+        # get all entries
+        entries = json.loads(
+            self.MakeRequest("/api/misc/workspaces/{}".format(self.workspace), {}, True)
+        )
+        # get only entry ids
+        return [w["entry_id"] for w in entries]

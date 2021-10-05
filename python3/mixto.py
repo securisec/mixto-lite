@@ -132,17 +132,13 @@ class MixtoLite:
         )
         return r
 
-    def GetWorkspaces(self) -> List[dict]:
-        """Get all workspaces, entries and commits in a compact format.
-        Helpful when trying to populate entry ID and commit ID's or
-        filter by workspace
+    def GetWorkspaces(self) -> dict:
+        """Get all workspaces information and stats
 
         Returns:
-            List[dict]: Array of workspace items
+            dict: Array of workspace items
         """
-        return self.MakeRequest(
-            "GET", "/api/misc/workspaces", None, {"all": "true"}, True
-        )
+        return self.MakeRequest("GET", "/api/workspace")
 
     def GetEntryIDs(self) -> List[str]:
         """Get all entry ids filtered by the current workspace
@@ -150,7 +146,11 @@ class MixtoLite:
         Returns:
             List[str]: List of entry ids
         """
-        # get all workspaces
-        workspaces = self.GetWorkspaces()
+        # get all entries
+        entries = self.MakeRequest(
+            "GET",
+            "/api/misc/workspaces/{}".format(self.workspace),
+            None,
+        )
         # filter workspaces by current workspace
-        return [w["entry_id"] for w in workspaces if w["workspace"] == self.workspace]
+        return [w["entry_id"] for w in entries]

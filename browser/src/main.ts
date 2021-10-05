@@ -61,7 +61,7 @@ export class MixtoLite {
 	 * @memberof MixtoLite
 	 */
 	GetWorkspaces(): Promise<Workspace[]> {
-		return this.MakeRequest('/api/misc/workspaces', {
+		return this.MakeRequest(`/api/misc/workspaces/${this.workspace}`, {
 			method: 'GET',
 		}).then((d) => d.json());
 	}

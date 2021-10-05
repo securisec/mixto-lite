@@ -99,11 +99,11 @@ export class MixtoLite {
 	 * @memberof MixtoLite
 	 */
 	GetWorkspaces(): Promise<Workspace[]> {
-		return this.MakeRequest('/api/misc/workspaces', { method: 'GET' }, null, {
-			all: 'true',
-		}).then((d) => {
-			return JSON.parse(d as any) as Workspace[];
-		});
+		return this.MakeRequest(`/api/workspace`, { method: 'GET' }, null).then(
+			(d) => {
+				return JSON.parse(d as any) as Workspace[];
+			}
+		);
 	}
 
 	/**
@@ -113,13 +113,12 @@ export class MixtoLite {
 	 * @memberof MixtoLite
 	 */
 	async GetEntryIDs(): Promise<string[]> {
-		const workspaces = await this.GetWorkspaces();
-		return workspaces.reduce((acc: string[], w: Workspace) => {
-			if (this.workspace == w.workspace) {
-				return [...acc, w.entry_id];
-			}
-			return acc;
-		}, []);
+		return this.MakeRequest(
+			`/api/misc/workspaces/${this.workspace}`,
+			{ method: 'GET' }
+		).then((res: any) => {
+			return JSON.parse(res).map((e: any) => e.entry_id)
+		});
 	}
 
 	/**

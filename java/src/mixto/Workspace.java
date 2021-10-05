@@ -6,24 +6,13 @@ import java.util.UUID;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Workspace {
-    public String workspace;
-    public String title;
+    public String workspace_id;
     public String category;
-    public String entry_id;
-    public long commit_count;
+    public long entries_count;
+    public long commits_count;
     public long flags_count;
-    public String priority;
     public long time_updated;
     public long time_created;
-    public Commit[] commits;
-    public Notice notice;
-    public String avatar;
-}
-
-@JsonIgnoreProperties(ignoreUnknown = true)
-class Notice {
-    public String text;
-    public String priority;
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)

@@ -54,11 +54,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MixtoLite = void 0;
 var fs_1 = require("fs");
@@ -150,9 +145,7 @@ var MixtoLite = /** @class */ (function () {
      * @memberof MixtoLite
      */
     MixtoLite.prototype.GetWorkspaces = function () {
-        return this.MakeRequest('/api/misc/workspaces', { method: 'GET' }, null, {
-            all: 'true',
-        }).then(function (d) {
+        return this.MakeRequest("/api/workspace", { method: 'GET' }, null).then(function (d) {
             return JSON.parse(d);
         });
     };
@@ -164,20 +157,10 @@ var MixtoLite = /** @class */ (function () {
      */
     MixtoLite.prototype.GetEntryIDs = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var workspaces;
-            var _this = this;
             return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.GetWorkspaces()];
-                    case 1:
-                        workspaces = _a.sent();
-                        return [2 /*return*/, workspaces.reduce(function (acc, w) {
-                                if (_this.workspace == w.workspace) {
-                                    return __spreadArray(__spreadArray([], acc), [w.entry_id]);
-                                }
-                                return acc;
-                            }, [])];
-                }
+                return [2 /*return*/, this.MakeRequest("/api/misc/workspaces/" + this.workspace, { method: 'GET' }).then(function (res) {
+                        return JSON.parse(res).map(function (e) { return e.entry_id; });
+                    })];
             });
         });
     };

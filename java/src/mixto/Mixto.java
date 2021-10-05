@@ -139,7 +139,7 @@ public final class Mixto {
         var query = new HashMap<String, String>();
         query.put("all", "true");
         var responseMapper = new ObjectMapper();
-        var response = this.MakeRequest("/api/misc/workspaces", query);
+        var response = this.MakeRequest("/api/workspace", query);
         Workspace[] workspaces = responseMapper.readValue(response.body().byteStream(), Workspace[].class);
         if (MIXTO_WORKSPACE == null) {
             return new Workspace[0];
@@ -147,19 +147,20 @@ public final class Mixto {
         return workspaces;
     }
 
-    /**
-     * Get an array of entry ids
-     *
-     * @return String[]
-     * @throws Exception exception
-     */
-    public String[] GetEntryIDs() throws Exception {
-        var workspaces = this.GetWorkspaces();
-        return Arrays.stream(workspaces)
-                .filter(workspace -> workspace.workspace.equals(this.MIXTO_WORKSPACE))
-                .map(w -> w.entry_id)
-                .toArray(String[]::new);
-    }
+//    TODO redo
+//    /**
+//     * Get an array of entry ids
+//     *
+//     * @return String[]
+//     * @throws Exception exception
+//     */
+//    public String[] GetEntryIDs() throws Exception {
+//        var workspaces = this.GetWorkspaces();
+//        return Arrays.stream(workspaces)
+//                .filter(workspace -> workspace.workspace.equals(this.MIXTO_WORKSPACE))
+//                .map(w -> w.entry_id)
+//                .toArray(String[]::new);
+//    }
 
     /**
      * Add a commit to Mixto

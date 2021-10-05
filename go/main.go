@@ -82,7 +82,7 @@ func (c *Config) MakeRequest(method string, endpoint string, data interface{}, q
 // GetWorkspaces get an array of all entries in a redacted form
 func (c *Config) GetWorkspaces() ([]Workspace, error) {
 	var r []Workspace
-	b, err := c.MakeRequest("GET", "/api/misc/workspaces", nil, nil)
+	b, err := c.MakeRequest("GET", "/api/workspace", nil, nil)
 	if err != nil {
 		return r, err
 	}
@@ -94,14 +94,16 @@ func (c *Config) GetWorkspaces() ([]Workspace, error) {
 // filtered by current workspace
 func (c *Config) GetEntryIDs() ([]string, error) {
 	var ids []string
-	workspaces, err := c.GetWorkspaces()
+	var entries []Entry
+	b, err := c.MakeRequest("GET", fmt.Sprintf("/api/misc/workspaces/%s", c.Workspace), nil, nil)
 	if err != nil {
 		return ids, err
 	}
-	for _, w := range workspaces {
-		if w.Workspace == c.Workspace {
-			ids = append(ids, w.EntryID)
-		}
+	if err = json.Unmarshal(b, &entries); err != nil {
+		return ids, err
+	}
+	for _, w := range entries {
+		ids = append(ids, w.EntryID)
 	}
 	return ids, nil
 }
@@ -160,14 +162,22 @@ func New(config ...*Config) *Config {
 
 // Workspace brief information about an entry
 type Workspace struct {
-	Workspace   string   `json:"workspace"`
+	Workspace   string `json:"workspace"`
+	Title       string `json:"title"`
+	Category    string `json:"category"`
+	CommitCount int    `json:"commits_count"`
+	FlagsCount  int    `json:"flags_count"`
+	Priority    string `json:"priority"`
+	TimeUpdated int64  `json:"time_updated"`
+}
+
+type Entry struct {
+	EntryID     string   `json:"entry_id"`
 	Title       string   `json:"title"`
 	Category    string   `json:"category"`
-	EntryID     string   `json:"entry_id"`
-	CommitCount int      `json:"commit_count"`
-	FlagsCount  int      `json:"flags_count"`
 	Priority    string   `json:"priority"`
 	TimeUpdated int64    `json:"time_updated"`
+	TimeCreated int64    `json:"time_created"`
 	Commits     []Commit `json:"commits"`
 }
 
