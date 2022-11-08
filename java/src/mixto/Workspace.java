@@ -7,12 +7,7 @@ import java.util.UUID;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Workspace {
     public String workspace_id;
-    public String category;
-    public long entries_count;
-    public long commits_count;
-    public long flags_count;
-    public long time_updated;
-    public long time_created;
+    public String workspace_name;
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)

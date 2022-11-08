@@ -7,7 +7,7 @@ import * as https from 'https';
 export class MixtoLite {
 	host: string | undefined;
 	api_key: string | undefined;
-	workspace: string | undefined;
+	workspace_id: string | undefined;
 
 	/**
 	 *Creates an instance of MixtoLite.
@@ -18,7 +18,7 @@ export class MixtoLite {
 	constructor(host?: string, apiKey?: string) {
 		this.host = host;
 		this.api_key = apiKey;
-		this.workspace = undefined;
+		this.workspace_id = undefined;
 
 		if (!this.host) {
 			this.host = process.env.MIXTO_HOST;
@@ -35,7 +35,7 @@ export class MixtoLite {
 			const config = JSON.parse(readFileSync(confPath, 'utf-8'));
 			this.host = config.host;
 			this.api_key = config.api_key;
-			this.workspace = config.workspace;
+			this.workspace_id = config.workspace_id;
 		}
 	}
 
@@ -99,9 +99,9 @@ export class MixtoLite {
 	 * @memberof MixtoLite
 	 */
 	GetWorkspaces(): Promise<Workspace[]> {
-		return this.MakeRequest(`/api/workspace`, { method: 'GET' }, null).then(
+		return this.MakeRequest(`/api/v1/workspace`, { method: 'GET' }, null).then(
 			(d) => {
-				return JSON.parse(d as any) as Workspace[];
+				return JSON.parse(d as any).data as Workspace[];
 			}
 		);
 	}
@@ -112,13 +112,13 @@ export class MixtoLite {
 	 * @returns {Promise<string[]>}
 	 * @memberof MixtoLite
 	 */
-	async GetEntryIDs(): Promise<string[]> {
-		return this.MakeRequest(
-			`/api/misc/workspaces/${this.workspace}`,
-			{ method: 'GET' }
-		).then((res: any) => {
-			return JSON.parse(res).map((e: any) => e.entry_id)
-		});
+	async GetEntryIDs(): Promise<Entry[]> {
+		let body = JSON.stringify({ workspace_id: this.workspace_id });
+		return this.MakeRequest(`/api/v1/workspace`, { method: 'POST' }, body).then(
+			(res: any) => {
+				return JSON.parse(res).data.entries;
+			}
+		);
 	}
 
 	/**
@@ -137,30 +137,28 @@ export class MixtoLite {
 		}
 		let body = JSON.stringify({
 			data: data,
-			type: 'tool',
+			commit_type: 'tool',
 			title: title,
+			workspace_id: this.workspace_id,
+			entry_id: entry_id,
 			meta: {},
 		});
-		return this.MakeRequest(
-			`/api/entry/${this.workspace}/${entry_id}/commit`,
-			{ method: 'POST' },
-			body
-		).then((d) => {
-			return JSON.parse(d as any) as Commit;
-		});
+		return this.MakeRequest(`/api/v1/commit`, { method: 'POST' }, body).then(
+			(d) => {
+				return JSON.parse(d as any) as Commit;
+			}
+		);
 	}
 }
 
 export interface Workspace {
-	workspace: string;
-	title: string;
-	category: string;
+	workspace_id: string;
+	workspace_name: string;
+}
+
+export interface Entry {
 	entry_id: string;
-	commit_count: number;
-	flags_count: number;
-	priority: string;
-	time_updated: number;
-	commits: Commit[];
+	title: string;
 }
 
 export interface Commit {

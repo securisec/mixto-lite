@@ -1,6 +1,6 @@
 # Mixto lite lib for python3
 
-from typing import List
+from typing import Dict, List
 from urllib.request import Request, urlopen
 from urllib.parse import urlencode, urljoin
 from urllib.error import HTTPError
@@ -30,7 +30,7 @@ class MixtoLite:
         super().__init__()
         self.host = host
         self.api_key = api_key
-        self.workspace = None
+        self.workspace_id = None
         self.status = 0
         self.commit_type = "tool"
 
@@ -48,7 +48,7 @@ class MixtoLite:
                     j = json.loads(f.read())
                     self.host = j["host"]
                     self.api_key = j["api_key"]
-                    self.workspace = j["workspace"]
+                    self.workspace_id = j["workspace_id"]
             except:
                 print("Cannot read mixto config file")
                 raise
@@ -127,30 +127,36 @@ class MixtoLite:
         e_id = MIXTO_ENTRY_ID if MIXTO_ENTRY_ID else entry_id
         r = self.MakeRequest(
             "POST",
-            "/api/entry/{}/{}/commit".format(self.workspace, e_id),
-            {"data": data, "type": self.commit_type, "title": title},
+            "/api/v1/commit",
+            {
+                "data": data,
+                "workspace_id": self.workspace_id,
+                "entry_id": e_id,
+                "commit_type": self.commit_type,
+                "title": title,
+            },
         )
         return r
 
-    def GetWorkspaces(self) -> dict:
+    def GetWorkspaces(self) -> List[Dict[str, str]]:
         """Get all workspaces information and stats
 
         Returns:
-            dict: Array of workspace items
+            List[Dict[str, str]]: Array of workspace items
         """
-        return self.MakeRequest("GET", "/api/workspace")
+        return self.MakeRequest("GET", "/api/v1/workspace")["data"]
 
-    def GetEntryIDs(self) -> List[str]:
+    def GetEntryIDs(self) -> List[Dict[str, str]]:
         """Get all entry ids filtered by the current workspace
 
         Returns:
-            List[str]: List of entry ids
+            List[Dict[str, str]]: List of entry ids
         """
         # get all entries
         entries = self.MakeRequest(
-            "GET",
-            "/api/misc/workspaces/{}".format(self.workspace),
-            None,
-        )
+            "POST",
+            "/api/v1/workspace",
+            {"workspace_id": self.workspace_id},
+        )["data"]["entries"]
         # filter workspaces by current workspace
-        return [w["entry_id"] for w in entries]
+        return entries

@@ -10,6 +10,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+// TODO 🔥 update for v2
+
 public final class Mixto {
     private final String MIXTO_API_KEY, MIXTO_HOST, MIXTO_WORKSPACE;
     private final HashMap<String, String> EMPTY_QUERY = new HashMap<>();
@@ -48,7 +50,7 @@ public final class Mixto {
             var config = configMapper.readValue(Paths.get(configFile).toFile(), Config.class);
             this.MIXTO_API_KEY = config.api_key;
             this.MIXTO_HOST = config.host;
-            this.MIXTO_WORKSPACE = config.workspace;
+            this.MIXTO_WORKSPACE = config.workspace_id;
         } else {
             this.MIXTO_API_KEY = envApiKey;
             this.MIXTO_HOST = envHost;
@@ -139,7 +141,7 @@ public final class Mixto {
         var query = new HashMap<String, String>();
         query.put("all", "true");
         var responseMapper = new ObjectMapper();
-        var response = this.MakeRequest("/api/workspace", query);
+        var response = this.MakeRequest("/api/v1/workspace", query);
         Workspace[] workspaces = responseMapper.readValue(response.body().byteStream(), Workspace[].class);
         if (MIXTO_WORKSPACE == null) {
             return new Workspace[0];

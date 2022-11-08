@@ -2,15 +2,19 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="dbd3cae2-1b7f-4efc-bad6-69fb2f7843f1" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/../browser/dist/bundle.js" beforeDir="false" afterPath="$PROJECT_DIR$/../browser/dist/bundle.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../browser/src/main.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../browser/src/main.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../go/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/../go/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/mixto/Config.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/mixto/Config.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/mixto/Mixto.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/mixto/Mixto.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/mixto/Workspace.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/mixto/Workspace.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../node/dist/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/../node/dist/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../node/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/../node/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../node/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/../node/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../node/src/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../node/src/index.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../python2/mixto.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python2/mixto.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../python3/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/../python3/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../python3/mixto.py" beforeDir="false" afterPath="$PROJECT_DIR$/../python3/mixto.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -38,6 +42,9 @@
       <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
     </file-type-list>
   </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
   <component name="ProjectId" id="1xvEqb3OKEfyVBdIVeTHANA3xcL" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
@@ -52,7 +59,8 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
-    <property name="project.structure.last.edited" value="Artifacts" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="project.structure.last.edited" value="SDKs" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.2" />
     <property name="settings.editor.selected.configurable" value="editor.preferences.folding" />
@@ -78,6 +86,5 @@
         </entry>
       </map>
     </option>
-    <option name="oldMeFiltersMigrated" value="true" />
   </component>
 </project>

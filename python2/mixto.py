@@ -27,7 +27,7 @@ class MixtoLite:
     def __init__(self, host=None, api_key=None):
         self.host = host
         self.api_key = api_key
-        self.workspace = None
+        self.workspace_id = None
         self.status = 0
         self.commit_type = "tool"
 
@@ -45,7 +45,7 @@ class MixtoLite:
                     j = json.loads(f.read())
                     self.host = j["host"]
                     self.api_key = j["api_key"]
-                    self.workspace = j["workspace"]
+                    self.workspace_id = j["workspace_id"]
             except:
                 print("Cannot read mixto config file")
                 raise
@@ -125,8 +125,14 @@ class MixtoLite:
 
         e_id = MIXTO_ENTRY_ID if MIXTO_ENTRY_ID else entry_id
         return self.MakeRequest(
-            "/api/entry/{}/{}/commit".format(self.workspace, e_id),
-            {"data": data, "type": self.commit_type, "title": title},
+            "/api/v1/commit",
+            {
+                "data": data,
+                "workspace_id": self.workspace_id,
+                "entry_id": e_id,
+                "commit_type": self.commit_type,
+                "title": title,
+            },
         )
 
     def GetWorkspaces(self):
@@ -135,7 +141,7 @@ class MixtoLite:
         Returns:
             List[dict]: Array of workspace items
         """
-        return json.loads(self.MakeRequest("/api/workspace", {}, True))
+        return json.loads(self.MakeRequest("/api/v1/workspace", {}, True))["data"]
 
     def GetEntryIDs(self):
         """Get all entry ids filtered by the current workspace
@@ -145,7 +151,11 @@ class MixtoLite:
         """
         # get all entries
         entries = json.loads(
-            self.MakeRequest("/api/misc/workspaces/{}".format(self.workspace), {}, True)
+            self.MakeRequest(
+                "/api/v1/workspace".format(self.workspace_id),
+                {"workspace_id": self.workspace_id},
+                True,
+            )["data"]["entries"]
         )
         # get only entry ids
-        return [w["entry_id"] for w in entries]
+        return entries

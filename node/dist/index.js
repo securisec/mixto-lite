@@ -71,7 +71,7 @@ var MixtoLite = /** @class */ (function () {
     function MixtoLite(host, apiKey) {
         this.host = host;
         this.api_key = apiKey;
-        this.workspace = undefined;
+        this.workspace_id = undefined;
         if (!this.host) {
             this.host = process.env.MIXTO_HOST;
         }
@@ -87,7 +87,7 @@ var MixtoLite = /** @class */ (function () {
             var config = JSON.parse(fs_1.readFileSync(confPath, 'utf-8'));
             this.host = config.host;
             this.api_key = config.api_key;
-            this.workspace = config.workspace;
+            this.workspace_id = config.workspace_id;
         }
     }
     /**
@@ -145,8 +145,8 @@ var MixtoLite = /** @class */ (function () {
      * @memberof MixtoLite
      */
     MixtoLite.prototype.GetWorkspaces = function () {
-        return this.MakeRequest("/api/workspace", { method: 'GET' }, null).then(function (d) {
-            return JSON.parse(d);
+        return this.MakeRequest("/api/v1/workspace", { method: 'GET' }, null).then(function (d) {
+            return JSON.parse(d).data;
         });
     };
     /**
@@ -157,9 +157,11 @@ var MixtoLite = /** @class */ (function () {
      */
     MixtoLite.prototype.GetEntryIDs = function () {
         return __awaiter(this, void 0, void 0, function () {
+            var body;
             return __generator(this, function (_a) {
-                return [2 /*return*/, this.MakeRequest("/api/misc/workspaces/" + this.workspace, { method: 'GET' }).then(function (res) {
-                        return JSON.parse(res).map(function (e) { return e.entry_id; });
+                body = JSON.stringify({ workspace_id: this.workspace_id });
+                return [2 /*return*/, this.MakeRequest("/api/v1/workspace", { method: 'POST' }, body).then(function (res) {
+                        return JSON.parse(res).data.entries;
                     })];
             });
         });
@@ -180,11 +182,13 @@ var MixtoLite = /** @class */ (function () {
         }
         var body = JSON.stringify({
             data: data,
-            type: 'tool',
+            commit_type: 'tool',
             title: title,
+            workspace_id: this.workspace_id,
+            entry_id: entry_id,
             meta: {},
         });
-        return this.MakeRequest("/api/entry/" + this.workspace + "/" + entry_id + "/commit", { method: 'POST' }, body).then(function (d) {
+        return this.MakeRequest("/api/v1/commit", { method: 'POST' }, body).then(function (d) {
             return JSON.parse(d);
         });
     };

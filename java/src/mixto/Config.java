@@ -6,5 +6,5 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class Config {
     public String api_key;
     public String host;
-    public String workspace;
+    public String workspace_id;
 }

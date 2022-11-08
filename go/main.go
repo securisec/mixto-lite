@@ -15,9 +15,9 @@ import (
 
 // Config config struct for mixto
 type Config struct {
-	Host      string `json:"host"`
-	APIKey    string `json:"api_key"`
-	Workspace string `json:"workspace"`
+	Host        string `json:"host"`
+	APIKey      string `json:"api_key"`
+	WorkspaceId string `json:"workspace_id"`
 }
 
 // MakeRequest generic request builder for mixto api
@@ -81,41 +81,48 @@ func (c *Config) MakeRequest(method string, endpoint string, data interface{}, q
 
 // GetWorkspaces get an array of all entries in a redacted form
 func (c *Config) GetWorkspaces() ([]Workspace, error) {
-	var r []Workspace
-	b, err := c.MakeRequest("GET", "/api/workspace", nil, nil)
+	var r struct {
+		Data []Workspace `json:"data"`
+	}
+	b, err := c.MakeRequest("GET", "/api/v1/workspace", nil, nil)
 	if err != nil {
-		return r, err
+		return r.Data, err
 	}
 	err = json.Unmarshal(b, &r)
-	return r, err
+	return r.Data, err
 }
 
 // GetEntryIDs get an array of all entries
 // filtered by current workspace
-func (c *Config) GetEntryIDs() ([]string, error) {
-	var ids []string
+func (c *Config) GetEntryIDs() ([]Entry, error) {
+	var res struct {
+		Data struct {
+			Entries []Entry `json:"entries"`
+		} `json:"data"`
+	}
 	var entries []Entry
-	b, err := c.MakeRequest("GET", fmt.Sprintf("/api/misc/workspaces/%s", c.Workspace), nil, nil)
+	b, err := c.MakeRequest("POST", "/api/v1/workspace", map[string]string{
+		"workspace_id": c.WorkspaceId,
+	}, nil)
 	if err != nil {
-		return ids, err
+		return entries, err
 	}
-	if err = json.Unmarshal(b, &entries); err != nil {
-		return ids, err
+	if err = json.Unmarshal(b, &res); err != nil {
+		return entries, err
 	}
-	for _, w := range entries {
-		ids = append(ids, w.EntryID)
-	}
-	return ids, nil
+	return res.Data.Entries, nil
 }
 
 // AddCommit add a commit to an entry
 func (c *Config) AddCommit(entryID string, data interface{}, title string) (Commit, error) {
 	var r Commit
-	e := fmt.Sprintf("/api/entry/%s/%s/commit", c.Workspace, entryID)
+	e := fmt.Sprintf("/api/entry/%s/%s/commit", c.WorkspaceId, entryID)
 	body := map[string]interface{}{
-		"data":  data,
-		"title": title,
-		"type":  "tool",
+		"data":         data,
+		"title":        title,
+		"commit_type":  "tool",
+		"entry_id":     entryID,
+		"workspace_id": c.WorkspaceId,
 	}
 	b, err := c.MakeRequest("POST", e, body, nil)
 	if err != nil {
@@ -162,23 +169,13 @@ func New(config ...*Config) *Config {
 
 // Workspace brief information about an entry
 type Workspace struct {
-	Workspace   string `json:"workspace"`
-	Title       string `json:"title"`
-	Category    string `json:"category"`
-	CommitCount int    `json:"commits_count"`
-	FlagsCount  int    `json:"flags_count"`
-	Priority    string `json:"priority"`
-	TimeUpdated int64  `json:"time_updated"`
+	WorkspaceId   string `json:"workspace_id"`
+	WorkspaceName string `json:"workspace_name"`
 }
 
 type Entry struct {
-	EntryID     string   `json:"entry_id"`
-	Title       string   `json:"title"`
-	Category    string   `json:"category"`
-	Priority    string   `json:"priority"`
-	TimeUpdated int64    `json:"time_updated"`
-	TimeCreated int64    `json:"time_created"`
-	Commits     []Commit `json:"commits"`
+	EntryID string `json:"entry_id"`
+	Title   string `json:"title"`
 }
 
 // Commit brief information about a commit
