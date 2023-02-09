@@ -154,7 +154,7 @@ class MixtoLite:
         """
         return self.MakeRequest("GET", "/api/v1/workspace")["data"]
 
-    def GetEntryIDs(self) -> List[Dict[str, str]]:
+    def GetEntryIDs(self, include_commits: bool = False) -> List[Dict[str, str]]:
         """Get all entry ids filtered by the current workspace
 
         Returns:
@@ -164,7 +164,7 @@ class MixtoLite:
         entries = self.MakeRequest(
             "POST",
             "/api/v1/workspace",
-            {"workspace_id": self.workspace_id},
+            {"workspace_id": self.workspace_id, "include_commits": include_commits},
         )["data"]["entries"]
         # filter workspaces by current workspace
         return entries
