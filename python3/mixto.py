@@ -106,7 +106,9 @@ class MixtoLite:
         except HTTPError as e:
             raise BadResponse(e.code, e.read())
 
-    def AddCommit(self, data: str, entry_id: str = None, title: str = ""):
+    def AddCommit(
+        self, data: str, entry_id: str = None, title: str = "", optional: dict = {}
+    ):
         """Add/commit data to an entry. This is the primary functionality of
         an integration
 
@@ -114,6 +116,7 @@ class MixtoLite:
             data (str): Data to add
             entry_id (str, optional): Entry ID. Will use MIXTO_ENTRY_ID as primary. Defaults to None.
             title (str, optional): Title for commit. Defaults to "Untitled".
+            optional (dict, optional): Optional dict to add to request body.
 
         Raises:
             MissingRequired: If entry id is missing
@@ -125,16 +128,21 @@ class MixtoLite:
             raise MissingRequired("Entry id is missing")
 
         e_id = MIXTO_ENTRY_ID if MIXTO_ENTRY_ID else entry_id
+        body = {
+            "data": data,
+            "workspace_id": self.workspace_id,
+            "entry_id": e_id,
+            "commit_type": self.commit_type,
+            "title": title,
+        }
+
+        if len(optional) > 0:
+            body = body | optional
+
         r = self.MakeRequest(
             "POST",
             "/api/v1/commit",
-            {
-                "data": data,
-                "workspace_id": self.workspace_id,
-                "entry_id": e_id,
-                "commit_type": self.commit_type,
-                "title": title,
-            },
+            body,
         )
         return r
 
@@ -160,3 +168,36 @@ class MixtoLite:
         )["data"]["entries"]
         # filter workspaces by current workspace
         return entries
+
+    def GetCommitData(self, commit_id: str) -> str:
+        """Get data for a commit by commit_id
+
+        Args:
+            commit_id (str): A valid commit_id
+
+        Raises:
+            ValueError: If no commit data is found
+
+        Returns:
+            dict: Commit added response
+        """
+        query = """query q($commit_id: uuid = "") {
+            commit: mixto_commits_by_pk(commit_id: $commit_id) {
+                data
+            }
+        }"""
+
+        commit_data = self.MakeRequest(
+            "POST",
+            "/api/v1/gql",
+            {"query": query, "variables": {"commit_id": commit_id}},
+        )
+
+        if "data" not in commit_data:
+            raise ValueError("commit data not found")
+        elif "commit" not in commit_data["data"]:
+            raise ValueError("commit data not found")
+        elif "data" not in commit_data["data"]["commit"]:
+            raise ValueError("commit data not found")
+
+        return commit_data["data"]["commit_id"]["data"]
