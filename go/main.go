@@ -1,10 +1,10 @@
+// Package mixto lite golang sdk
 package mixto
 
 import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -17,7 +17,7 @@ import (
 type Config struct {
 	Host        string `json:"host"`
 	APIKey      string `json:"api_key"`
-	WorkspaceId string `json:"workspace_id"`
+	WorkspaceID string `json:"workspace_id"`
 }
 
 // MakeRequest generic request builder for mixto api
@@ -94,15 +94,20 @@ func (c *Config) GetWorkspaces() ([]Workspace, error) {
 
 // GetEntryIDs get an array of all entries
 // filtered by current workspace
-func (c *Config) GetEntryIDs() ([]Entry, error) {
+func (c *Config) GetEntryIDs(includeCommits ...bool) ([]Entry, error) {
+	ic := false
+	if len(includeCommits) > 0 {
+		ic = includeCommits[0]
+	}
 	var res struct {
 		Data struct {
 			Entries []Entry `json:"entries"`
 		} `json:"data"`
 	}
 	var entries []Entry
-	b, err := c.MakeRequest("POST", "/api/v1/workspace", map[string]string{
-		"workspace_id": c.WorkspaceId,
+	b, err := c.MakeRequest("POST", "/api/v1/workspace", map[string]interface{}{
+		"workspace_id":    c.WorkspaceID,
+		"include_commits": ic,
 	}, nil)
 	if err != nil {
 		return entries, err
@@ -116,15 +121,33 @@ func (c *Config) GetEntryIDs() ([]Entry, error) {
 // AddCommit add a commit to an entry
 func (c *Config) AddCommit(entryID string, data interface{}, title string) (Commit, error) {
 	var r Commit
-	e := fmt.Sprintf("/api/entry/%s/%s/commit", c.WorkspaceId, entryID)
+	e := "/api/v1/commit"
 	body := map[string]interface{}{
 		"data":         data,
 		"title":        title,
 		"commit_type":  "tool",
 		"entry_id":     entryID,
-		"workspace_id": c.WorkspaceId,
+		"workspace_id": c.WorkspaceID,
 	}
 	b, err := c.MakeRequest("POST", e, body, nil)
+	if err != nil {
+		return r, err
+	}
+	err = json.Unmarshal(b, &r)
+	return r, err
+}
+
+// GraphQL make a generic graphql request. query argument is required, and an optional
+// map of variables can be passed
+func (c *Config) GraphQL(query string, variables *map[string]interface{}) (GQLResponse, error) {
+	var r GQLResponse
+	body := map[string]interface{}{
+		"query": query,
+	}
+	if variables != nil {
+		body["variables"] = variables
+	}
+	b, err := c.MakeRequest("POST", "/api/v1/gql", body, nil)
 	if err != nil {
 		return r, err
 	}
@@ -169,19 +192,26 @@ func New(config ...*Config) *Config {
 
 // Workspace brief information about an entry
 type Workspace struct {
-	WorkspaceId   string `json:"workspace_id"`
+	WorkspaceID   string `json:"workspace_id"`
 	WorkspaceName string `json:"workspace_name"`
 }
 
+// Entry entry type
 type Entry struct {
-	EntryID string `json:"entry_id"`
-	Title   string `json:"title"`
+	EntryID string   `json:"entry_id"`
+	Title   string   `json:"title"`
+	Commits []Commit `json:"commits,omitempty"`
 }
 
 // Commit brief information about a commit
 type Commit struct {
-	CommitID    string `json:"commit_id"`
-	Title       string `json:"title"`
-	Type        string `json:"type"`
-	TimeUpdated int64  `json:"time_updated"`
+	CommitID string `json:"commit_id"`
+	Title    string `json:"title"`
+	Type     string `json:"type"`
+}
+
+// GQLResponse standard gql response
+type GQLResponse struct {
+	Data  map[string]interface{} `json:"data"`
+	Error interface{}            `json:"error"`
 }

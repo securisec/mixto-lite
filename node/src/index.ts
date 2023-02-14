@@ -109,11 +109,15 @@ export class MixtoLite {
 	/**
 	 *Get all entry ids filtered by current workspace.
 	 *
-	 * @returns {Promise<string[]>}
+	 * @param {boolean} [includeCommits] Include all commits in response
+	 * @returns {Promise<Entry[]>}
 	 * @memberof MixtoLite
 	 */
-	async GetEntryIDs(): Promise<Entry[]> {
-		let body = JSON.stringify({ workspace_id: this.workspace_id });
+	async GetEntryIDs(includeCommits: boolean = false): Promise<Entry[]> {
+		let body = JSON.stringify({
+			workspace_id: this.workspace_id,
+			include_commits: includeCommits,
+		});
 		return this.MakeRequest(`/api/v1/workspace`, { method: 'POST' }, body).then(
 			(res: any) => {
 				return JSON.parse(res).data.entries;
@@ -149,6 +153,26 @@ export class MixtoLite {
 			}
 		);
 	}
+
+	/**
+	 * Make a generic graphql request to the mixto server
+	 * @param query gql query
+	 * @param variables optional variables
+	 * @returns {Promise<GQLResponse>} Thenable GQLResponse object
+	 */
+	GraphQL(query: string, variables?: Map<string, any>): Promise<GQLResponse> {
+		let body: any = { query: query };
+		if (variables) {
+			body['variables'] = variables;
+		}
+		return this.MakeRequest(
+			'/api/v1/gql',
+			{ method: 'POST' },
+			JSON.stringify(body)
+		).then((d) => {
+			return JSON.parse(d as any) as GQLResponse;
+		});
+	}
 }
 
 export interface Workspace {
@@ -159,11 +183,18 @@ export interface Workspace {
 export interface Entry {
 	entry_id: string;
 	title: string;
+	commits?: Commit[];
 }
 
 export interface Commit {
 	commit_it: string;
 	title: string;
 	type: string;
-	time_updated: number;
+}
+
+export interface GQLResponse {
+	data?: {
+		[key: string]: any;
+	};
+	error?: any;
 }

@@ -139,7 +139,6 @@ public final class Mixto {
      */
     public Workspace[] GetWorkspaces() throws Exception {
         var query = new HashMap<String, String>();
-        query.put("all", "true");
         var responseMapper = new ObjectMapper();
         var response = this.MakeRequest("/api/v1/workspace", query);
         Workspace[] workspaces = responseMapper.readValue(response.body().byteStream(), Workspace[].class);
@@ -149,20 +148,16 @@ public final class Mixto {
         return workspaces;
     }
 
-//    TODO redo
-//    /**
-//     * Get an array of entry ids
-//     *
-//     * @return String[]
-//     * @throws Exception exception
-//     */
-//    public String[] GetEntryIDs() throws Exception {
-//        var workspaces = this.GetWorkspaces();
-//        return Arrays.stream(workspaces)
-//                .filter(workspace -> workspace.workspace.equals(this.MIXTO_WORKSPACE))
-//                .map(w -> w.entry_id)
-//                .toArray(String[]::new);
-//    }
+    public Entry[] GetEntries(Boolean includeCommits) throws Exception {
+        var body = new HashMap<String, Object>();
+        var responseMapper = new ObjectMapper();
+        body.put("workspace_id", this.MIXTO_WORKSPACE);
+        body.put("include_commits", includeCommits);
+        var jsonBody = new ObjectMapper().writeValueAsString(body);
+        var resp = this.MakeRequest("POST", "/api/v1/workspace", jsonfromString(jsonBody));
+        assert resp.body() != null;
+        return responseMapper.readValue(resp.body().byteStream(), Entry[].class);
+    }
 
     /**
      * Add a commit to Mixto
@@ -174,13 +169,14 @@ public final class Mixto {
      * @throws Exception if status code is not 200
      */
     public Response AddCommit(String data, String entryID, String title) throws Exception {
-        var entryURL = "/api/entry/" + this.MIXTO_WORKSPACE + "/" + entryID + "/commit";
+        var entryURL = "/api/v1/commit";
         var body = new HashMap<String, String>();
-        body.put("type", "tool");
+        body.put("commit_type", "tool");
         body.put("title", title);
         body.put("data", data);
+        body.put("entry_id", entryID);
+        body.put("workspace_id", this.MIXTO_WORKSPACE);
         var jsonBody = new ObjectMapper().writeValueAsString(body);
-        System.out.println(jsonBody);
         return MakeRequest("POST", entryURL, jsonfromString(jsonBody));
     }
 

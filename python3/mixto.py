@@ -1,6 +1,6 @@
 # Mixto lite lib for python3
 
-from typing import Dict, List
+from typing import Dict, List, Union, Any
 from urllib.request import Request, urlopen
 from urllib.parse import urlencode, urljoin
 from urllib.error import HTTPError
@@ -26,7 +26,9 @@ class BadResponse(Exception):
 
 
 class MixtoLite:
-    def __init__(self, host: str = None, api_key: str = None) -> None:
+    def __init__(
+        self, host: Union[None, str] = None, api_key: Union[None, str] = None
+    ) -> None:
         super().__init__()
         self.host = host
         self.api_key = api_key
@@ -82,6 +84,10 @@ class MixtoLite:
         q = ""
         if query:
             q = "?" + urlencode(query)
+
+        if self.api_key is None:
+            raise AttributeError("api_key not found")
+
         req = Request(
             method=method.upper(),
             url=url + q,
@@ -106,9 +112,7 @@ class MixtoLite:
         except HTTPError as e:
             raise BadResponse(e.code, e.read())
 
-    def AddCommit(
-        self, data: str, entry_id: str = None, title: str = "", optional: dict = {}
-    ):
+    def AddCommit(self, data: str, entry_id: str, title: str = "", optional: dict = {}):
         """Add/commit data to an entry. This is the primary functionality of
         an integration
 
@@ -201,3 +205,28 @@ class MixtoLite:
             raise ValueError("commit data not found")
 
         return commit_data["data"]["commit_id"]["data"]
+
+    def GraphQL(
+        self, query: str, variables: Union[Dict[str, Any], None] = None
+    ) -> Dict[str, Any]:
+        """Make a graphql request
+
+        Args:
+            query (str): GQL query string
+            variables (Union[Dict[str, Any], None], optional): GQL variables. Defaults to None.
+
+        Raises:
+            ValueError: If the data key is not found in the response
+
+        Returns:
+            Dict[str, Any]: GQL response
+        """
+        body: Dict[str, Any] = {"query": query}
+        if variables is not None:
+            body["variables"] = variables
+        resp = self.MakeRequest("POST", "/api/v1/gql", body=body)
+
+        if "data" not in resp:
+            raise ValueError(resp)
+
+        return resp["data"]

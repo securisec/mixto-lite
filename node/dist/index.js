@@ -1,7 +1,11 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -80,11 +84,11 @@ var MixtoLite = /** @class */ (function () {
         }
         // if host and api key is still empty, read config file
         if (!this.host || !this.api_key) {
-            var confPath = path.join(os_1.homedir(), '.mixto.json');
-            if (!fs_1.existsSync(confPath)) {
+            var confPath = path.join((0, os_1.homedir)(), '.mixto.json');
+            if (!(0, fs_1.existsSync)(confPath)) {
                 throw new Error('Mixto config file not found');
             }
-            var config = JSON.parse(fs_1.readFileSync(confPath, 'utf-8'));
+            var config = JSON.parse((0, fs_1.readFileSync)(confPath, 'utf-8'));
             this.host = config.host;
             this.api_key = config.api_key;
             this.workspace_id = config.workspace_id;
@@ -122,14 +126,14 @@ var MixtoLite = /** @class */ (function () {
                 var body = [];
                 if (res.statusCode) {
                     if (res.statusCode < 200 || res.statusCode >= 300) {
-                        return reject(new Error("Bad response: " + res.statusCode));
+                        return reject(new Error("Bad response: ".concat(res.statusCode)));
                     }
                 }
                 res.on('data', function (c) { return body.push(c); });
                 res.on('end', function () {
                     resolve(Buffer.concat(body).toString());
                 });
-                res.on('error', function () { return reject("Bad response: " + res.statusCode); });
+                res.on('error', function () { return reject("Bad response: ".concat(res.statusCode)); });
             });
             if (data) {
                 req.write(data);
@@ -152,14 +156,19 @@ var MixtoLite = /** @class */ (function () {
     /**
      *Get all entry ids filtered by current workspace.
      *
-     * @returns {Promise<string[]>}
+     * @param {boolean} [includeCommits] Include all commits in response
+     * @returns {Promise<Entry[]>}
      * @memberof MixtoLite
      */
-    MixtoLite.prototype.GetEntryIDs = function () {
+    MixtoLite.prototype.GetEntryIDs = function (includeCommits) {
+        if (includeCommits === void 0) { includeCommits = false; }
         return __awaiter(this, void 0, void 0, function () {
             var body;
             return __generator(this, function (_a) {
-                body = JSON.stringify({ workspace_id: this.workspace_id });
+                body = JSON.stringify({
+                    workspace_id: this.workspace_id,
+                    include_commits: includeCommits,
+                });
                 return [2 /*return*/, this.MakeRequest("/api/v1/workspace", { method: 'POST' }, body).then(function (res) {
                         return JSON.parse(res).data.entries;
                     })];
@@ -189,6 +198,21 @@ var MixtoLite = /** @class */ (function () {
             meta: {},
         });
         return this.MakeRequest("/api/v1/commit", { method: 'POST' }, body).then(function (d) {
+            return JSON.parse(d);
+        });
+    };
+    /**
+     * Make a generic graphql request to the mixto server
+     * @param query gql query
+     * @param variables optional variables
+     * @returns {Promise<GQLResponse>} Thenable GQLResponse object
+     */
+    MixtoLite.prototype.GraphQL = function (query, variables) {
+        var body = { query: query };
+        if (variables) {
+            body['variables'] = variables;
+        }
+        return this.MakeRequest('/api/v1/gql', { method: 'POST' }, JSON.stringify(body)).then(function (d) {
             return JSON.parse(d);
         });
     };

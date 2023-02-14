@@ -1,4 +1,5 @@
 # Mixto python2 lite lib for integrations without any dependencies
+# 🔥 DEPRECATED
 
 from urllib2 import Request, urlopen, HTTPError
 from urllib import urlencode

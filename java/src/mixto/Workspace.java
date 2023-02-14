@@ -14,10 +14,13 @@ public class Workspace {
 class Commit {
     public UUID commit_id;
     public String title;
-    public String type;
-    public String workspace;
-    public long time_updated;
-    public long time_created;
-    public String avatar;
-    public String username;
+    public String commit_type;
+}
+
+@JsonIgnoreProperties(ignoreUnknown = false)
+class Entry {
+    public String title;
+    public String entry_id;
+    public String category;
+    public Commit[] commits;
 }
